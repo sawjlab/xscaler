@@ -1,0 +1,41 @@
+
+   XSCALER PACKAGE
+   ================
+
+Robert Michaels, Jefferson Lab
+Jan 10, 2017
+
+The codes you mostly care about here are :
+
+      THaScaler 
+      THaScalerGui
+      tscalgui_main
+
+There are several other "main" routines for testing THaScaler,
+but they are largely unecessary for hall C.
+
+For general documentation about THaScaler, see
+
+http://hallaweb.jlab.org/equipment/daq/THaScaler.html
+
+See also notes in the Makefile.
+
+Notes:
+
+   1. Make sure you have the scaler map file in your directory.
+      See 'scaler.map'.  This defines the buttons and tabs in
+      the xscaler GUI.
+
+   2. Start xscaler by typing "./xscaler".
+      The default at the moment is for SHMS scalers.
+
+   3. Parameters about the clock (what channel, what rate, etc)
+      used to normalize the scalers are defined in the line 
+      xscaler-clock SHMS slot:11 chan:1 rate:60
+      in scaler.map.  They are checked versus assumptions in
+      the code THaScaler::LoadDataRPC which loads from the server.
+      I need to work on making that more robust, like I worry
+      it will break if we add a 16-channel scaler, etc.
+
+
+
