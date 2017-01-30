@@ -1,4 +1,4 @@
-//////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////
 //
 //   THaScaler
 //
@@ -33,7 +33,11 @@
 #include "THaScalerDB.h"
 #include "THaCodaFile.h"
 #include "THaEvData.h"
-#include "scaserCalls.h" 
+
+extern "C" {
+#include "scaserCalls.h"
+}
+
 #include "TDatime.h"
 #include <sys/ioctl.h>
 #include <sys/types.h>
@@ -518,9 +522,9 @@ Int_t THaScaler::LoadDataRPC(const char* host) {
      static Float_t defaultClkRate = 60;
 
      static int firsttime = 1;
-     static int ldebug = 0;
-     char *rpchost;
-     Int_t ntot;
+     static int ldebug = 1;
+     static char rpchost[100];
+     Int_t ntot, lreturn;
 
      if (firsttime) {
        strcpy(rpchost, host);
@@ -551,10 +555,22 @@ Int_t THaScaler::LoadDataRPC(const char* host) {
        }
      }
 
-     if (rpchandle == 0) return -1; // no connection    
+     if (rpchandle == 0) {
+        printf("Warning:  RPC scaler server handle=0 !  Setting values to zero.\n");
+	ClearAll();
+        return -1;  // no connection    
+     }
+
 	
-     scaserReadScalers(rpchandle, 0, rpcchannels, rpcscalers, rpcoverflows,0);
-       
+     lreturn = scaserReadScalers(rpchandle, 0, rpcchannels, rpcscalers, rpcoverflows,0);
+
+     if (lreturn == 0) {  // server failed
+        printf("Warning:  RPC scaler server %s reading failed.  Setting values to zero.\n",rpchost);
+        printf("Check if %s is up \n",rpchost);
+	ClearAll();
+        return -1;  // no data
+     }
+
      if (ldebug) { // Steve Wood's printout
         printf("\n-----------\nRPC scalers \n");
         for(Int_t i=0;i<rpcchannels;i++) {

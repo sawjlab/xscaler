@@ -393,7 +393,7 @@ void THaScalerGui::updateValues() {
 #ifndef TESTONLY
   if (scaler->LoadDataOnline() == SCAL_ERROR) {
       cout << "Error loading data online"<<endl;
-      return;
+      //don't return; instead, show zeros below.
   } else {
     //    cout << "No error loading data online "<<endl;
   }
