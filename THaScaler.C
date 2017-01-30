@@ -174,6 +174,7 @@ Int_t THaScaler::InitData(std::string bankgroup, const Bdate& date_want) {
 
   static const DataMap datamap[] = {
     { "SHMS", 0, 4, 0, 0, 0, "vmec19", 0, 0,0,0,0,0,0,0,0,0,0,0,0},
+    { "HMS" , 0, 5, 0, 0, 0, "vmec20", 0, 0,0,0,0,0,0,0,0,0,0,0,0},
 
     // Event type 140's
     { "Left",  0xabc00000, 8, 140, 4, 1024, "129.57.192.30",  5022, 
@@ -218,6 +219,9 @@ Int_t THaScaler::InitData(std::string bankgroup, const Bdate& date_want) {
      }
      if ( database->FindNoCase(bankgroup,"SHMS") != std::string::npos) {
           bank_to_find = "SHMS"; 
+     }
+     if ( database->FindNoCase(bankgroup,"HMS") != std::string::npos) {
+          bank_to_find = "HMS"; 
      }
 
    }
@@ -278,7 +282,7 @@ Int_t THaScaler::InitData(std::string bankgroup, const Bdate& date_want) {
   if (crate == -1) {
     if (SCAL_VERBOSE) {
       cout << "THaScaler:: Warning: Undefined crate"<<endl;
-      cout << "Need to Init for 'Left', 'Right' crate, etc."<<endl;
+      cout << "Need to Init for 'SHMS', 'HMS' crate, etc."<<endl;
     }
   }
 
@@ -522,13 +526,14 @@ Int_t THaScaler::LoadDataRPC(const char* host) {
      static Float_t defaultClkRate = 60;
 
      static int firsttime = 1;
-     static int ldebug = 1;
+     static int ldebug = 0;
      static char rpchost[100];
      Int_t ntot, lreturn;
 
      if (firsttime) {
        strcpy(rpchost, host);
        rpchandle=scaserOpen(rpchost);
+       cout << "RPC host "<<rpchost<<"    handle  "<<rpchandle<<endl;
        if (rpchandle !=0) {
 	 scaserGetInfo(rpchandle,0,&rpcchannels,0,&rpciclock);
          rpcscalers = (int *) malloc(rpcchannels*sizeof(int)); 

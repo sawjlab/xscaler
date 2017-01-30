@@ -369,7 +369,7 @@ Bool_t THaScalerGui::ProcessMessage(Long_t msg, Long_t parm1, Long_t) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void THaScalerGui::Help() {
   fHelpDialog = new TRootHelpDialog(this,"BRIEF  HELP  INSTRUCTIONS",350,250);
-  fHelpDialog->SetText("xscaler++ treats the data from one bank\nof scalers (e.g. L-arm, R-arm, etc).\nUsage:\nxscaler [bankgroup]\nTo view a recent history of updates, press on\nthe button corresponding to the channel and\na canvas will pop up.\nClick ``Show Rates'' or ``Show Counts'' to switch\nbetween rate display and accumulated counts.\n\nSupport: Barak Schmookler (MIT)\n         Robert Michaels (JLab Hall A)\nDocumentation:\nhallaweb.jlab.org/equipment/daq/THaScaler.html");
+  fHelpDialog->SetText("xscaler++ treats the data from one bank\nof scalers (e.g. HMS, SHMS, etc).\nUsage:\nxscaler [bankgroup]\nTo view a recent history of updates, press on\nthe button corresponding to the channel and\na canvas will pop up.\nClick ``Show Rates'' or ``Show Counts'' to switch\nbetween rate display and accumulated counts.\n\nSupport: Barak Schmookler (MIT)\n         Robert Michaels (JLab Hall A)\nDocumentation:\nhallaweb.jlab.org/equipment/daq/THaScaler.html");
   fHelpDialog->Popup();
 };
 
