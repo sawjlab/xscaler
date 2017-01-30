@@ -1,0 +1,217 @@
+Notes for scaler server.
+
+On bootup.
+
+Set environment variables.
+Load scaler software.
+
+Include with scaler buffer the number of reads since clear.  Return this with
+the RPC data packet.
+
+Clear should be done by setting a flag for the asynchronous task.
+
+Execute scaler task.
+
+	1.  Read SCALER_ADDRESS_BASE and SCALER_MODULE_COUNT.  If either
+	    is undefined, don't run scaler server.
+	2.  Create the scaler buffer according to the module_count.
+	3.  Call setup_scalers.
+	4.  Set the run not in progress/coda flags.
+	5.  Spawn the scaler server RPC
+	6.  Spawn the scaler readout task
+	7.  Exit
+
+In Readout lists
+
+	Prestart	Set Run in progress flag on
+			Kill the readout task
+
+	End		After aquiring last event, set run in progress
+			flag off.
+			Startup the readout task
+
+
+API so far
+
+CLIENT *handle;
+handle = scaserOpen(char *host);  /* Pass the hostname of a scaler server
+					e.g. vmec3, vmec5, vmec9 */
+
+int err;
+err = scaserGetInfo(handle, int *slots, int *channels, int *rip, int *clock);
+Returns 1 if successful
+	slots:		Number of slots of scalers	Not fully implimented
+	channels:	Number of scaler channels
+	rip:		!= 0 if there is a run in progress
+	clock:		Index of a scaler with a 1mhz clock
+
+If a return argument is not desired, place 0 in the argument list for
+that argument.
+
+err = scaserReadScalers(handle, int first, int count, int *values, int
+	*overflows, int *events);
+
+	first:		First channel to be returned (noramlly 0)
+	count:		Number of scalers channels to read
+	values:		Array scaler values
+	overflows:	Array of scaler overflows
+	events:		Count of how man times scaler hardware has been	
+			read since last rese
+
+
+October 2001		Corrections to helicity scalers
+
+vmec9 has been experiencing several crashes per day.  The crashes
+seem much more likely to happen between runs than during runs.
+There was a suspicion that reading the helicity scalers between
+runs increased the likelyhood of these crashes.
+
+First the time between a reboot and a crash was measured.
+Typically, vmec9 crashes about 1/2 hour after reboot.  Then the
+reading of helicity scalers was inhibited when a run was not in
+progress.  This eliminated the crashing.
+
+Reading helicity scalers between runs is a little tricky.  The
+helicity scalers are latched 30 times a second.  But without
+getting into interrupt programming, we do not read out the
+scalers immediately after they are latched.  (It wouldn't be a
+bad idea to handle this with interrupts, but we don't now.  We
+would have to make sure the interrupts don't conflict with the
+CODA interrupts).  The scalers are buffered, so we just read them
+out every two seconds, accumulating the 30Hz events.
+
+The buffers in the scalerss do not have any event structure to
+them.  Each latch/event pushes 32 words into a FIFO.  There are
+no markers between events and there is no way to ask how many
+events or words are in the FIFO.  The only things available are
+bits indicating whether the FIFO is empty, full, or half full.
+So there are several worries.
+
+1.  A latch might fail to fill all 32 words into the FIFO.  (This
+seems not to happen)
+2.  We have 3 helicity scalers.  A latch could be missed by some
+but not all of the scalers.  (Flakey latch wiring.)
+3.  We could be reading while the FIFO is being filled, resulting
+in us not seeing all 32 words.
+4.  A FIFO could fill up.  (This could potentially happen during
+a run when CODA occaisionally suffers large dead time lock ups.)
+
+In order to protect against the various possibilities, the
+following is done to read the helicity scalers.
+
+1.  Check if any of the scaler FIFO's are full.
+2.  Check if any of the scaler FIFO's are empty.
+3.  If any of above are true, clear the scaler FIFO's and exit
+the read routine.
+4.  Zero out accumulators for each scaler channel.
+5.  Read 32 words from each scaler.  Accumulate each word into accumulators
+6.  Check if one or more scalers are empty.  If all the scalers
+are not empty, go back to 5.
+7.  If all the scalers were empty simultaneously, add the
+accumulated channels into the overall accumulators.  If not all
+were empty simultaneoulys, goto 9.
+8.  Check all all scalers for emptyness and flush out any extra
+data and exit routine.
+9.  Print out an error about not all scaler modules having the
+same amount of data.
+
+One of the symptoms of a crash was that when logged onto vmec9
+through the console port, a CODA ROC watch dog would report that
+the ROC timed out.  Dave Abbott suggested that something could be
+eating up the CPU time.
+
+I installed a new vxWorks kernel that supports the spy command.
+This is similar to the unix top command.  Under normal operation,
+spy showed that the scaler server was only using about 1% of the
+CPU.  However, if the watchdog message from the ROC show up, then
+spy showed that the scalerReadoutTask was using all the CPU
+time.  So something was causing the readout task to go into an
+infinite loop.
+
+At the same time I started adding print statments to find out
+where the scalerReadoutTask was crashing or hanging up.  This
+pretty much narrowed down the infinite loop to step 8 above ahere
+the scalers are rechecked to see if they are empty and flushed
+out if they are not.  It is not clear why we can go into an
+infinite loop here, but in thinking about this, this check is
+redundant.
+
+Removing this check for emptyness seems to have cleared up the
+vmec9 crashing problem.
+
+In debugging the crashing problem, the error messages "Some
+helicity scalers missing data" and "Counts in both helicity
+scalers" were investigated.
+
+Missing data:
+
+The helicity scaler FIFO's are read out until one or more scalers
+are empty.  Normally, all three scalers will be empty at the same
+time.  If they are not empty at the same time, a message is
+printed that shows which scalers still have data.  Every time, it
+is either the third scaler alone, or the second and third scalers
+that have data.  Since the scalers are checked for emptyness in
+order, this is consistent with the idea that a latch arrives
+while the scalers are being checked.  There will be a few
+microseconds between the checking of each scaler, so there is
+some chance that a latch will come in during this period.  The
+observed rate of "Some helicity scalers missing data" messages is
+consisten with a 5 microsecond interval to check the scalers.
+
+When we get these "normal" looking missing data messages, we now
+don't flush out anything.  In every case, the next event looks
+OK, i.e., all the FIFO's have the same amount of data.
+
+Counts in both helicity scalers:
+
+For each event read from the FIFO's, the code looks at the number
+of counts in the plus and minus channels of the 10 MhZ clock.
+Because of the way the scalers are gated and latched, only one of
+the two helicities should have counts for each event.  The scaler
+readout code checks to see if both the plus and minus channels
+have counts as this could indicate a problem with the electronics
+gating, or a software problem (loosing sync between the 3
+helicity scaler during readout.)  We do get such errors at a low
+rate (few per day), so more diagnostics were added to the scaler
+readout code to show the contents of the scalers when both plus
+and minus show counts.
+
+It was found that whenever there were counts in both plus and
+minus channels of the 10 MhZ clock, the plus channel always had a
+large number of counts and the minus channel had a single count.
+The diagnostics showed that the software readout did not loose
+sync, so this is probably a very intermittent electronics glitch.
+
+Furthermore, most of the time when the minus channel has a single
+count, the plus channel has about 160,000 counts instead of the
+usual 325,000 counts.  These two values correspond to
+approximately 1/60th and 1/30th of a second respectively.  It is
+assumed from this that the extra count is correlated with glithes
+in the signals from MCC.
+
+As a result of these studies, the scaler readout code has been
+modified so that a count of one will be ignore in determining the
+helicity.
+
+
+Conclusions:
+
+1.  vmec9 should not crash nearly as often (or at all).
+
+2.  Helicity scaler readout is robust.  (The 3 scalers don't get
+out of sync with each other.)
+
+3.  While there were bugs in the scaler readout code, these bugs
+were usually manifested only between runs.  For data taken in
+September and earlier, a coda filter will be
+implimented to filter out/correct for data where there are scaler
+errors.	 It is expected that this filter will have no meaningful
+impact on results or statistics.
+
+
+
+
+
+
+
+
