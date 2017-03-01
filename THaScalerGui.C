@@ -414,10 +414,10 @@ void THaScalerGui::updateValues() {
 #endif
        switch (showselect) {
            case SHOWRATE:
-               sprintf(value,"%-6.3e",rate);
+               sprintf(value,"%-6.2e",rate);
                break;
            case SHOWCOUNT:
-               sprintf(value,"%-6.4e",count);
+               sprintf(value,"%-6.2e",count);
                break;
            default:
    	       cout << "WARNING: Not updating rates or counts "<<endl;
