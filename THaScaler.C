@@ -173,8 +173,8 @@ Int_t THaScaler::InitData(std::string bankgroup, const Bdate& date_want) {
   };
 
   static const DataMap datamap[] = {
-    { "SHMS", 0, 4, 0, 0, 0, "vmec19", 0, 0,0,0,0,0,0,0,0,0,0,0,0},
-    { "HMS" , 0, 5, 0, 0, 0, "vmec20", 0, 0,0,0,0,0,0,0,0,0,0,0,0},
+    { "SHMS", 0, 5, 0, 0, 0, "hcvme08", 0, 0,0,0,0,0,0,0,0,0,0,0,0},
+    { "HMS" , 0, 4, 0, 0, 0, "hcvme05", 0, 0,0,0,0,0,0,0,0,0,0,0,0},
 
     // Event type 140's
     { "Left",  0xabc00000, 8, 140, 4, 1024, "129.57.192.30",  5022, 
@@ -219,12 +219,18 @@ Int_t THaScaler::InitData(std::string bankgroup, const Bdate& date_want) {
      }
      if ( database->FindNoCase(bankgroup,"SHMS") != std::string::npos) {
           bank_to_find = "SHMS"; 
+          goto done1;
      }
      if ( database->FindNoCase(bankgroup,"HMS") != std::string::npos) {
           bank_to_find = "HMS"; 
+         goto done1;
      }
 
    }
+
+ done1:
+
+    cout << "bank wanted "<<bankgroup<<"   bank to use "<<bank_to_find<<endl;
 
 // Handle the detector swap for data prior to Sept 15, 2000
   Bdate dswap(15,9,2000);     
@@ -566,6 +572,9 @@ Int_t THaScaler::LoadDataRPC(const char* host) {
         return -1;  // no connection    
      }
 
+     LoadPrevious();
+     Clear();
+
 	
      lreturn = scaserReadScalers(rpchandle, 0, rpcchannels, rpcscalers, rpcoverflows,0);
 
@@ -593,6 +602,7 @@ Int_t THaScaler::LoadDataRPC(const char* host) {
              } 
 	}
      }
+
 
    return 0;
 }
