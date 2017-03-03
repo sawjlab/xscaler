@@ -211,7 +211,7 @@ hSHWR        0   4     6    13   1     hSHWR
 hAERSUM      0   4     6    14   1     hAERSUM                                       
 hCERSUM      0   4     6    15   1     hCERSUM                                       
 BCM5          0   5     6    25   1     bcm5                                           
-BCM6          0   5     6    26   1     bcm6                                           
+BCM7          0   5     7    27   1     bcm7                                           
 BCM1          0   4     6    27   1     bcm1                                           
 BCM2          0   4     6    28   1     bcm2                                           
 BCM17         0   4     6    29   1     bcm17                                           
@@ -373,7 +373,7 @@ sSHWR        0   5     7    13   1     sSHWR
 sAERSUM      0   5     7    14   1     sAERSUM                                       
 sCERSUM      0   5     7    15   1     sCERSUM                                       
 BCM5          0   5     7    25   1     bcm5                                           
-BCM6          0   5     7    26   1     bcm6                                           
+BCM7          0   5     7    27   1     bcm7                                           
 BCM1          0   5     7    27   1     bcm1                                           
 BCM2          0   5     7    28   1     bcm2                                           
 BCM17         0   5     7    29   1     bcm17                                           
