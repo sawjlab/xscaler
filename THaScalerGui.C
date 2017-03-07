@@ -14,8 +14,8 @@
 //#define TESTONLY    1
 // Some GUI geometry sizes (16 vs 32 channel)
 //#define YBOXSMALL    460
-#define YBOXSMALL    1000
-#define YBOXBIG      1000
+#define YBOXSMALL    750
+#define YBOXBIG      750
 //#define YBOXBIG      1000
 // Constants for the logic
 #define SHOWRATE       1
@@ -129,7 +129,7 @@ Int_t THaScalerGui::InitPlots() {
   showselect = SHOWRATE;
   TGTab *fTab = new TGTab(this, 600, 800);
   // TGTab *fTab = new TGTab(this, 1000, 1000);
-  TGLayoutHints *fLayout = new TGLayoutHints(kLHintsCenterX | kLHintsExpandX, 10, 10, 10, 10);
+  TGLayoutHints *fLayout = new TGLayoutHints(kLHintsCenterX | kLHintsExpandX | kLHintsExpandY, 10, 10, 10, 10);
   TGLayoutHints *fLayout2 = new TGLayoutHints(kLHintsNormal ,10, 10, 10, 10);
   if (!scaler->GetDataBase()) {
     cout << "THaScalerGui::WARNING: no database.  Will use defaults..."<<endl;
@@ -163,7 +163,7 @@ Int_t THaScalerGui::InitPlots() {
     if (nrow * ncol > 16) yboxsize[ipage] = YBOXBIG;
 
     //Page Label
-    const TGFont *font = gClient->GetFont("-*-times-medium-r-normal-*-34-*-*-*-*-*-*-*");
+    const TGFont *font = gClient->GetFont("-*-times-medium-r-normal-*-30-*-*-*-*-*-*-*");
     if (!font)
       font = gClient->GetResourcePool()->GetDefaultFont();
     FontStruct_t labelfont = font->GetFontStruct();
@@ -213,7 +213,8 @@ Int_t THaScalerGui::InitPlots() {
           fButton1 = new TGTextButton(fr,new TGHotString(cbutton),
                    SCAL_NUMBANK*SCAL_NUMCHAN + OFFSET_HIST + index);
 
-	  const TGFont *bfont = gClient->GetFont("-*-times-medium-r-normal-*-34-*-*-*-*-*-*-*");
+	  // XXXX
+	  const TGFont *bfont = gClient->GetFont("-*-times-bold-r-normal-*-26-*-*-*-*-*-*-*");
 	  if (!bfont)
 	    bfont = gClient->GetResourcePool()->GetDefaultFont();
 	  FontStruct_t buttonfont = bfont->GetFontStruct();
@@ -263,19 +264,19 @@ Int_t THaScalerGui::InitPlots() {
   fGCb->AddFrame(fQuit, fLayout2);
   fQuit->Associate(this);
 
-  const TGFont *dfont = gClient->GetFont("-*-times-bold-r-normal-*-34-*-*-*-*-*-*-*");
+  const TGFont *dfont = gClient->GetFont("-*-times-bold-r-normal-*-26-*-*-*-*-*-*-*");
   if (!dfont)
     dfont = gClient->GetResourcePool()->GetDefaultFont();
   FontStruct_t checkfont = dfont->GetFontStruct();
   
-  TGLabel *fGlabel2 = new TGLabel(fGCb, new TGString("                                                                                                              "));
+  TGLabel *fGlabel2 = new TGLabel(fGCb, new TGString("                                                   "));
   fGCb->AddFrame(fGlabel2, fLayout);
   
-  TGHotString *fHString1 = new TGHotString("Show Rates (in Hz)"); 
+  TGHotString *fHString1 = new TGHotString("Show Rates (Hz)"); 
   fRateSelect = new TGCheckButton(fGCb,fHString1,SCAL_NUMBANK*SCAL_NUMCHAN+OFFSET_RATE);
   fRateSelect->SetFont(checkfont);
   fRateSelect->SetTextColor(gcolor);
-  //fRateSelect->Resize(100,100);
+  // fRateSelect->Resize(100,100);
   fGCb->AddFrame(fRateSelect, fLayout);
   fRateSelect->Associate(this);
   fRateSelect->SetState(kButtonDown);
@@ -295,7 +296,7 @@ Int_t THaScalerGui::InitPlots() {
   SetWindowName("HALL  C   SCALER   DATA");
   SetIconName("Scalers");
   MapWindow(); 
-  Resize(1500,yboxsize[0]);
+  Resize(1150,yboxsize[0]);
   lastsize = yboxsize[0];
   return 0;
 };
@@ -414,10 +415,18 @@ void THaScalerGui::updateValues() {
 #endif
        switch (showselect) {
            case SHOWRATE:
+	     if(rate < 100000.0 && rate >= 0.1) {
+	       sprintf(value,"%7.1f", rate);
+	     } else {
                sprintf(value,"%-6.2e",rate);
+	     }
                break;
            case SHOWCOUNT:
+	     if(count <1000000 && count > 0.0) {
+               sprintf(value,"%6d",(int) count);
+	     } else {
                sprintf(value,"%-6.2e",count);
+	     }
                break;
            default:
    	       cout << "WARNING: Not updating rates or counts "<<endl;
