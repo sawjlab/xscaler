@@ -4,6 +4,7 @@
 *.d
 scaserCalls.h.gch
 libscaler.a
+.nfs*
 
 # Copy this from hana_decode/libdc.a
 libdc_local.a
