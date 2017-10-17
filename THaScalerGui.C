@@ -78,7 +78,7 @@ Int_t THaScalerGui::InitFromDB() {
 // Adjust some parameters of xscaler from DB if they were set there.
 // Otherwise the parameters are defaults which are probably ok.
   if (!scaler) return -1;
-  if ( !scaler->GetDataBase()) return -1;
+  if ( !(database=scaler->GetDataBase())) return -1;
   std::string server,port,clkchan,clkslot,clkrate;
   server = scaler->GetDataBase()->GetStringDirectives(crate, "xscaler-server", "IP"); 
   if (server != "none") {
@@ -201,9 +201,19 @@ Int_t THaScalerGui::InitPlots() {
           char cbutton[100];
 	  std::string buttonname = "none";
           if (scaler->GetDataBase()) { 
-            std::vector<std::string> strb = 
-               scaler->GetDataBase()->GetShortNames(crate,slot,chan);
-  	    buttonname = strb[0];
+	    Int_t actualslot;
+	    Int_t actualchan;
+	    if(slot < 0) {
+	      std::pair<Int_t, Int_t> slotchan = database->GetSlotChanFromPageIndex(crate,ipage,chan);
+	      actualslot = slotchan.first;
+	      actualchan = slotchan.second;
+	    } else {
+	      actualslot = slot;
+	      actualchan = chan;
+	    }
+	    std::vector<std::string> strb
+	      = scaler->GetDataBase()->GetShortNames(crate,actualslot,actualchan);
+	    buttonname = strb[0];
 	  }
           if (buttonname == "none") {
             sprintf(cbutton,"%d ==>",ncol*row+col+1);
@@ -303,7 +313,7 @@ Int_t THaScalerGui::InitPlots() {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void THaScalerGui::InitPages() {
-  Int_t ipage, slot;
+  Int_t ipage, slot, usepage;
   static char value[50];
   slotmap.clear();
   if (!scaler) return;
@@ -312,19 +322,28 @@ void THaScalerGui::InitPages() {
   if (npages == 0) npages = 10;  // reasonable default
   for (ipage = 0; ipage < npages; ipage++) {
     slot = ipage;
+    usepage = 0;
     if ( scaler->GetDataBase()) {
       sprintf(value, "%d", ipage);
       string spage = value;
       string detname = scaler->GetDataBase()->GetStringDirectives(crate,"xscaler-pageslot",spage);
       if (detname.find("slot") != std::string::npos) {
 	sscanf(detname.c_str(), "slot%d", &slot); 
+      } else if (detname.find("page") != std::string::npos) {
+	usepage = 1;
       } else {
-        if (detname != "none") {
-          slot = scaler->GetSlot(detname);
+	if (detname != "none") {
+	  slot = scaler->GetSlot(detname);
 	}
       }
     }
-    slotmap.insert(make_pair(ipage, slot));
+    if(usepage == 0) {		// Standard behavior
+      slotmap.insert(make_pair(ipage, slot));
+    } else {			// User defined page contents
+      // Indicate that this page is user defined instead of being
+      // a particular slot
+      slotmap.insert(make_pair(ipage, -1));
+    }
   }
 }
 
@@ -401,6 +420,10 @@ void THaScalerGui::updateValues() {
 #endif
   for (ipage = 0; ipage < npages; ipage++) {
     slot = slotmap[ipage];
+    // If slot < 0, this is a user defined page, not a slot
+    // Need a collection of pages that gives the slot and chan for
+    // a given page/index
+    //        scaler->GetScalerRateByPage(page,chan)
     for (chan = 0; chan < SCAL_NUMCHAN; chan++) {
        index = ipage*SCAL_NUMCHAN + chan;
 #ifdef TESTONLY
@@ -408,8 +431,18 @@ void THaScalerGui::updateValues() {
        count = rate + 100000;
        //       cout << "getting FAKE data "<<slot<<"  "<<chan<<"  data = "<<count<<endl;
 #else
-       count = (float)scaler->GetScaler(slot, chan);
-       rate  = (float)scaler->GetScalerRate(slot, chan);
+       Int_t actualslot;
+       Int_t actualchan;
+       if(slot < 0) {
+	 std::pair<Int_t, Int_t> slotchan = database->GetSlotChanFromPageIndex(crate,ipage,chan);
+	 actualslot = slotchan.first;
+	 actualchan = slotchan.second;
+       } else {
+	 actualslot = slot;
+	 actualchan = chan;
+       }
+       count = (float)scaler->GetScaler(actualslot, actualchan);
+       rate  = (float)scaler->GetScalerRate(actualslot, actualchan);
        //       cout << "getting data "<<slot<<"  "<<chan<<"  data = "<<count<<"   "<<rate<<endl;
        //       cout << "showselect = "<<showselect<<endl;
 #endif
