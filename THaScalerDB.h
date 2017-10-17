@@ -246,6 +246,7 @@ public:
    Int_t CrateToInt(const std::string& scrate);
    void PrintChanMap();
    void PrintDirectives();
+   std::pair<Int_t, Int_t> GetSlotChanFromPageIndex(Int_t crate, Int_t ipage, Int_t ind);
 
 private:
 
@@ -269,6 +270,8 @@ private:
    Int_t GetSlotOffset(Int_t crate, Int_t helicity);
    Int_t AmtSpace(const std::string& s);
    std::vector<std::string> vsplit(const std::string& s);
+   // Map of (crate/page) to vector of (slot/channel)
+   std::map<std::pair<Int_t, Int_t>, std::vector<std::pair<Int_t, Int_t> > > pagemap;
 
    //ClassDef(THaScalerDB,0)  // Text-based time-dependent database for scaler map and directives
 

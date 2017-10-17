@@ -33,6 +33,7 @@
 #include "TCut.h"
 #include "TRootHelpDialog.h"
 #include "THaScaler.h"
+#include "THaScalerDB.h"
 #include <map>
 
 class THaScaler;
@@ -71,6 +72,7 @@ private:
    std::string bankgroup;
    int *yboxsize;
    int *occupied;
+   THaScalerDB *database;
 
 };
 

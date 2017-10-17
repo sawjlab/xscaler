@@ -240,10 +240,10 @@ bool THaScalerDB::LoadMap(std::string sinput)
   SDB_chanDesc sd;
 
   std::vector<std::string> vstring = vsplit(sinput);
-  if (vstring.size() < 6) return false;
+  if (vstring.size() < 7) return false;
   std::string long_desc = "";
-  if (vstring.size() >= 7) {
-    for (UInt_t i = 6; i < vstring.size(); i++) {
+  if (vstring.size() >= 8) {
+    for (UInt_t i = 7; i < vstring.size(); i++) {
       long_desc = long_desc + vstring[i] + " ";
     }
   }
@@ -253,7 +253,19 @@ bool THaScalerDB::LoadMap(std::string sinput)
   Int_t slot = atoi(vstring[3].c_str());
   Int_t first_chan = atoi(vstring[4].c_str());
   Int_t nchan = atoi(vstring[5].c_str());
+  Int_t page = atoi(vstring[6].c_str());
 
+  if(page >= 0) {
+    std::pair<Int_t, Int_t> cratepage = make_pair(crate, page);
+    if(pagemap.find(cratepage) == pagemap.end()) { // New page
+      std::vector<std::pair<Int_t, Int_t> > chanlist;
+      chanlist.clear();
+      pagemap.insert(make_pair(cratepage, chanlist));
+    }
+    for(Int_t ichan=first_chan;ichan<first_chan+nchan;ichan++) {
+      pagemap[cratepage].push_back(make_pair(slot, ichan));
+    }
+  }
   std::pair<std::pair<Int_t, Int_t>, Int_t> cs = make_pair(make_pair(crate, slot), first_chan);
   if (channame.find(cs) == channame.end()) {
     vector<std::string> cnewstr;
@@ -261,7 +273,7 @@ bool THaScalerDB::LoadMap(std::string sinput)
     cnewstr.push_back(sdesc);
     channame.insert(make_pair(make_pair(make_pair(crate, slot), first_chan),cnewstr));
   } else {
-    channame[cs].push_back(sdesc);
+    channame[cs].push_back(sdesc); // Multiple names for same channel?
   }
   SDB_chanKey sk(crate, helicity, sdesc);
   std::map<SDB_chanKey, SDB_chanDesc>::iterator pm = chanmap.find(sk);
@@ -448,5 +460,12 @@ std::vector<std::string> THaScalerDB::vsplit(const std::string& s) {
   }
   return ret;
 };
+
+std::pair<Int_t, Int_t> THaScalerDB::GetSlotChanFromPageIndex(Int_t crate, Int_t ipage, Int_t ind)
+{
+  std::pair<Int_t, Int_t> cratepage = make_pair(crate, ipage);
+  std::pair<Int_t, Int_t> slotchan = pagemap[cratepage][ind];
+  return slotchan;
+}
 
 //ClassImp(THaScalerDB)
