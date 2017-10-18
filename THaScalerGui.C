@@ -501,8 +501,18 @@ void THaScalerGui::popPlot(int index) {
   
   TString buttonname = "none";
   if (scaler->GetDataBase()) { 
+    Int_t actualslot;
+    Int_t actualchan;
+    if(slot < 0) {
+      std::pair<Int_t, Int_t> slotchan = database->GetSlotChanFromPageIndex(crate,page,chan);
+      actualslot = slotchan.first;
+      actualchan = slotchan.second;
+    } else {
+      actualslot = slot;
+      actualchan = chan;
+    }
     std::vector<std::string> strb = 
-      scaler->GetDataBase()->GetShortNames(crate,slot,chan);
+      scaler->GetDataBase()->GetShortNames(crate,actualslot,actualchan);
     buttonname = strb[0];
   }
   if (buttonname== "none") buttonname="Empty Channel";
