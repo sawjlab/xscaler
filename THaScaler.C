@@ -547,7 +547,13 @@ Int_t THaScaler::LoadDataRPC(const char* host) {
        if (rpchandle !=0) {
 	 // If we previously opened, assume everything the same
 	 if(!rpcchannels) {
-	   scaserGetInfo(rpchandle,0,&rpcchannels,0,&rpciclock);
+	   if(!scaserGetInfo(rpchandle,0,&rpcchannels,0,&rpciclock)) {
+	     rpcchannels = 0;
+	     rpciclock = 0;
+	     printf("Warning:  RPC scaler server timeout!  Setting values to zero.\n");
+	     ClearAll();
+	     return -1;  // no connection
+	   }
 	   rpcscalers = (int *) malloc(rpcchannels*sizeof(int));
 	   rpcoverflows = (int *) malloc(rpcchannels*sizeof(int));
 	   Int_t slot = (Int_t) (rpciclock/chanPerScaler);
