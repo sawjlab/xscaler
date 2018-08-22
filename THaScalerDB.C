@@ -173,8 +173,8 @@ std::string THaScalerDB::GetLineType(std::string sline) {
 // Decide if the line is a date, comment, directive, or a map field.
    if (sline.length() == 0) return "COMMENT";
    if (sline.length() == AmtSpace(sline)) return "COMMENT";
-   size_t pos1 = FindNoCase(sline,sdate);
-   size_t pos2 = FindNoCase(sline,scomment);
+   Int_t pos1 = FindNoCase(sline,sdate);
+   Int_t pos2 = FindNoCase(sline,scomment);
    if (pos1 != -1 ) { // date was found
      if (pos2 != -1) {  // comment found
        if (pos2 < pos1) return "COMMENT";
@@ -420,7 +420,7 @@ Int_t THaScalerDB::GetSlotOffset(Int_t crate, Int_t helicity) {
   return atoi(sdir.c_str());
 }
 
-size_t THaScalerDB::FindNoCase(const std::string sdata, const std::string skey) 
+Int_t THaScalerDB::FindNoCase(const std::string sdata, const std::string skey) 
 {
 // Find iterator of word "sdata" where "skey" starts.  Case insensitive.
   std::string sdatalc, skeylc;
@@ -437,7 +437,7 @@ size_t THaScalerDB::FindNoCase(const std::string sdata, const std::string skey)
   return sdatalc.find(skeylc,0);
 }
 
-Int_t THaScalerDB::AmtSpace(const std::string& s) {
+UInt_t THaScalerDB::AmtSpace(const std::string& s) {
   typedef std::string::size_type string_size;
   Int_t nsp = 0;  string_size i = 0;
   while (i++ != s.size()) if(isspace(s[i])) nsp++;

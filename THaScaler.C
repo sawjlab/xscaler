@@ -161,7 +161,7 @@ Int_t THaScaler::InitData(std::string bankgroup, const Bdate& date_want) {
 
   struct DataMap {
     const char *bank_name;      // name of bank ("Left", "Right", "dvcs", etc)
-    Int_t bank_header;          // header to find data
+    UInt_t bank_header;          // header to find data
     Int_t bank_cratenum;        // crate number
     Int_t evstr_type;           // part of event stream (1) or evtype 140
     Int_t normslot;             // slot of normalization data (database can
@@ -197,31 +197,31 @@ Int_t THaScaler::InitData(std::string bankgroup, const Bdate& date_want) {
 
    std::string bank_to_find = "unknown";
    if (database) {
-     if ( database->FindNoCase(bankgroup,"Left") != std::string::npos  
+     if ( database->FindNoCase(bankgroup,"Left") != -1  
         || bankgroup == "L" ) {
           bank_to_find = "Left"; 
      }
-     if ( database->FindNoCase(bankgroup,"Right") != std::string::npos  
+     if ( database->FindNoCase(bankgroup,"Right") != -1  
         || bankgroup == "R" ) {
           bank_to_find = "Right"; 
      }
-     if ( database->FindNoCase(bankgroup,"dvcs") != std::string::npos) {
+     if ( database->FindNoCase(bankgroup,"dvcs") != -1) {
           bank_to_find = "dvcs"; 
      }
-     if ( database->FindNoCase(bankgroup,"N20") != std::string::npos) {
+     if ( database->FindNoCase(bankgroup,"N20") != -1) {
           bank_to_find = "N20"; 
      }
-     if ( database->FindNoCase(bankgroup,"evleft") != std::string::npos) {
+     if ( database->FindNoCase(bankgroup,"evleft") != -1) {
           bank_to_find = "evleft"; 
      }
-     if ( database->FindNoCase(bankgroup,"evright") != std::string::npos) {
+     if ( database->FindNoCase(bankgroup,"evright") != -1) {
           bank_to_find = "evright"; 
      }
-     if ( database->FindNoCase(bankgroup,"SHMS") != std::string::npos) {
+     if ( database->FindNoCase(bankgroup,"SHMS") != -1) {
           bank_to_find = "SHMS"; 
           goto done1;
      }
-     if ( database->FindNoCase(bankgroup,"HMS") != std::string::npos) {
+     if ( database->FindNoCase(bankgroup,"HMS") != -1) {
           bank_to_find = "HMS"; 
          goto done1;
      }
@@ -329,7 +329,7 @@ void THaScaler::SetupNormMap() {
   clkchan = GetChan("clock");
   for (Int_t ichan = 0; ichan < SCAL_NUMCHAN; ichan++) {
     std::vector<std::string> chan_name = database->GetShortNames(crate, normslot[0], ichan);
-    for (int i = 0; i < chan_name.size(); i++) {
+    for (UInt_t i = 0; i < chan_name.size(); i++) {
       if (chan_name[i] != "none") {
         normmap.insert(make_pair(chan_name[i], ichan));
       }
@@ -837,8 +837,8 @@ Int_t THaScaler::GetScaler(const char* det, const char* pm, Int_t chan,
   string PMT = pm;
   if ( !did_init | !one_load ) return 0;
   if ( !database ) return 0;
-  if ( database->FindNoCase(PMT,"Left") != std::string::npos ) detector += "L";
-  if ( database->FindNoCase(PMT,"Right") != std::string::npos ) detector += "R";
+  if ( database->FindNoCase(PMT,"Left") != -1 ) detector += "L";
+  if ( database->FindNoCase(PMT,"Right") != -1 ) detector += "R";
   Int_t slot = GetSlot(detector);
   if (slot == -1) return 0;
   return GetScaler(slot,GetChan(detector,0,chan),histor);

@@ -235,7 +235,7 @@ public:
    virtual ~THaScalerDB();
    bool extract_db(const Bdate& bdate);
    std::string GetLongDesc(Int_t crate, std::string desc, Int_t helicity=0);
-   size_t FindNoCase(const std::string s1, const std::string s2);
+   Int_t FindNoCase(const std::string s1, const std::string s2);
    Int_t GetSlot(Int_t crate, std::string desc, Int_t helicity=0);
    Int_t GetChan(Int_t crate, std::string desc, Int_t helicity=0, Int_t chan=0);
    std::vector<std::string> GetShortNames(Int_t crate, Int_t slot, Int_t chan);
@@ -268,7 +268,7 @@ private:
    Bool_t IsHelicityTied(Int_t crate, Int_t helicity);
    Int_t TiedCrate(Int_t crate, Int_t helicity);
    Int_t GetSlotOffset(Int_t crate, Int_t helicity);
-   Int_t AmtSpace(const std::string& s);
+   UInt_t AmtSpace(const std::string& s);
    std::vector<std::string> vsplit(const std::string& s);
    // Map of (crate/page) to vector of (slot/channel)
    std::map<std::pair<Int_t, Int_t>, std::vector<std::pair<Int_t, Int_t> > > pagemap;
