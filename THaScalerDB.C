@@ -169,32 +169,27 @@ void THaScalerDB::PrintDirectives() {
 };
 
 
-std::string THaScalerDB::GetLineType(std::string sline) {
+std::string THaScalerDB::GetLineType(std::string s) {
 // Decide if the line is a date, comment, directive, or a map field.
+   std::string sline = s;
+   Int_t poscomment = FindNoCase(sline, scomment);
+   if (poscomment >= 0) {	// Strip comments
+     sline.resize(poscomment);
+   }
+   // Line is comment if empty or all space
    if (sline.length() == 0) return "COMMENT";
    if (sline.length() == AmtSpace(sline)) return "COMMENT";
-   Int_t pos1 = FindNoCase(sline,sdate);
-   Int_t pos2 = FindNoCase(sline,scomment);
-   if (pos1 != -1 ) { // date was found
-     if (pos2 != -1) {  // comment found
-       if (pos2 < pos1) return "COMMENT";
-     }
+   if (FindNoCase(sline,sdate)  != -1 ) { // date was found
      return "DATE";
    }
-// Directives line, even if after a comment (#)
-// as long as not too far after (fgnfar)
    std::string result;
-   if (pos2 == -1 || pos2 < fgnfar) {
-    for (UInt_t i=0; i<directnames.size(); i++) {
-     pos1 = FindNoCase(sline, directnames[i]);
+   for (UInt_t i=0; i<directnames.size(); i++) {
+     Int_t pos1 = FindNoCase(sline, directnames[i]);
      if (pos1 != -1) {
-      result.assign(sline.substr(pos1,sline.length()));;
-      return result;
+       result.assign(sline.substr(pos1,sline.length()));;
+       return result;
      }
-    }
    }
-// Not a directive but has a comment near start.
-   if (pos2 != std::string::npos && pos2 < fgnfar) return "COMMENT";
 // otherwise its a map line
    return "MAP";
 }
