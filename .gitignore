@@ -13,12 +13,15 @@ libscaler.a
 
 # Copy this from hana_decode/libdc.a
 libdc_local.a
+# Copy this from hana_decode
+THaDecDict_rdict.pcm
 
 # Copy this from RPC_test
 libscaser.a
 
 # Autogeneraged files in hana_decode
 hana_decode/THaDecDict.*
+hana_decode/*.pcm
 hana_decode/epicsd
 hana_decode/prfact
 hana_decode/tdecex

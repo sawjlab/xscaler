@@ -37,6 +37,8 @@ export BUILD_SHARED = 1
 # a fairly stable version and call it libdc_local.a (a local copy).  
 # It's probably good enough.  If not, compile it in ../hana_decode
 # by typing "make libdc.a" and copy it to $(pwd)/libdc_local.a
+# For ROOT 6, the file THaDecDict_rdict.pcm should also be copied
+# from hana_decode.
 
 LIBDC=libdc_local.a
 LIBRPC=libscaser.a
