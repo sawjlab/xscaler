@@ -560,18 +560,22 @@ Int_t THaScaler::LoadDataRPC(const char* host) {
 	   Int_t chan = rpciclock - chanPerScaler*slot;
 	   if (ldebug) printf("\nRPC scalers: num channels %d  clock chan %d %d %d\n",
 			      rpcchannels,rpciclock, slot, chan);
+	   // If clock not defined, use channel reported by server
+	   if(GetClockSlot() < 0 || GetClockChan() < 0) {
+	     printf("LoadDataRPC:: Warning:  Clock not defined in scaler.map, use server defined slot/chan=%d/%d @ 60Hz\n", slot, chan);
+	     SetClockLoc(slot, chan);
+	     SetClockRate(defaultClkRate);
+	   }
 // Check for consistency versus what was assumed in the scaler.map file "xscaler-clock" line
 // but use the values found here anyway.
 	   if (slot != GetClockSlot()) 
-	     printf("LoadDataRPC:: Warning:  discovered clock slot %d disagrees with scaler map slot %d\n",
+	     printf("LoadDataRPC:: Note:  discovered clock slot %d disagrees with scaler map slot %d\n",
 		    slot,GetClockSlot());
 	   if (chan != GetClockChan()) 
-	     printf("LoadDataRPC:: Warning:  discovered clock chan %d disagrees with scaler map chan %d\n",
+	     printf("LoadDataRPC:: Note:  discovered clock chan %d disagrees with scaler map chan %d\n",
 		    chan,GetClockChan());
-	   SetClockLoc(slot, chan);
 	   if (GetClockRate() != defaultClkRate) 
-	     printf("Warning: Assumed clock rate %f inconsistent with scaler.map\n",GetClockRate());
-	   SetClockRate(defaultClkRate);
+	     printf("Note: Assumed clock rate %f inconsistent with scaler.map\n",GetClockRate());
 	 }
 
        } else {
